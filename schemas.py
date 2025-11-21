@@ -1,48 +1,37 @@
 """
-Database Schemas
+Database Schemas for Report Card App
 
-Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
-
-Each Pydantic model represents a collection in your database.
-Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+Each Pydantic model represents a collection in MongoDB. The collection name is the lowercase of the class name.
 """
-
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Dict
+from datetime import datetime
 
-# Example schemas (replace with your own):
+class Student(BaseModel):
+    full_name: str = Field(..., description="Nama lengkap siswa")
+    student_number: str = Field(..., description="NIS/NISN atau nomor induk")
+    class_name: str = Field(..., description="Kelas, misal: VIIA, IXB, X IPA 1")
+    gender: Optional[str] = Field(None, description="L/P")
+    birth_date: Optional[datetime] = Field(None, description="Tanggal lahir")
 
-class User(BaseModel):
-    """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
-    """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+class Subject(BaseModel):
+    name: str = Field(..., description="Nama mata pelajaran")
+    kkm: float = Field(70, ge=0, le=100, description="Kriteria ketuntasan minimal")
 
-class Product(BaseModel):
-    """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
-    """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
+class Weight(BaseModel):
+    subject_id: str = Field(..., description="ID subject")
+    class_name: Optional[str] = Field(None, description="Berlaku untuk kelas tertentu (opsional)")
+    tugas: float = Field(30, ge=0, le=100, description="Bobot tugas dalam persen")
+    kuis: float = Field(20, ge=0, le=100, description="Bobot kuis dalam persen")
+    uts: float = Field(20, ge=0, le=100, description="Bobot UTS dalam persen")
+    uas: float = Field(30, ge=0, le=100, description="Bobot UAS dalam persen")
 
-# Add your own schemas here:
-# --------------------------------------------------
+class Score(BaseModel):
+    student_id: str = Field(..., description="ID siswa")
+    subject_id: str = Field(..., description="ID mata pelajaran")
+    type: str = Field(..., description="tugas|kuis|uts|uas")
+    value: float = Field(..., ge=0, le=100, description="Nilai 0-100")
+    note: Optional[str] = Field(None, description="Catatan (opsional)")
+    date: Optional[datetime] = Field(None, description="Tanggal penilaian")
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+# Note: The Flames database viewer may read schemas via /schema endpoint in backend.
